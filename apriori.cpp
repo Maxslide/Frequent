@@ -18,12 +18,8 @@ bool has_infrequent_subset(vector <ll> c,set <vector<ll> > lk)
 {
 	for(ll i=0;i<c.size();i++)
 	{
-		vector <ll> tem;
-		for(ll j=0;j<c.size();j++)
-		{
-			if(j!=i)
-				tem.pb(c[j]);
-		}
+		vector <ll> tem(c.begin(),c.end());
+		tem.erase(tem.begin()+i);
 		if(lk.find(tem)==lk.end())
 			return false;
 	}
@@ -52,11 +48,7 @@ vector <vector<ll> > apriori_gen(vector <vector<ll> > lk,ll k)
 			}
 			if(i==k-1)
 			{
-				vector <ll> v;
-				for(ll j=0;j<k;j++)
-				{
-					v.pb(lk[l][j]);
-				}
+				vector <ll> v(lk[l].begin(), lk[l].end());
 				v.pb(lk[m][k-1]);
 				if(has_infrequent_subset(v,lk1))
 				{
@@ -103,6 +95,7 @@ vector <vector <vector <ll> > > apriori(vector <set<ll> > v, ll sup)
 		ck=apriori_gen(lk,k);
 		lk.clear();
 		// cout << lk.size() << "\n";
+		k++;
 		ll n=ck.size();
 		ll cnt[n+2]={0};
 		for(auto s:v)
@@ -130,7 +123,7 @@ vector <vector <vector <ll> > > apriori(vector <set<ll> > v, ll sup)
 				lk.pb(ck[l]);
 			}
 		}
-		k++;
+		
 	}
 	return ans;
 }
@@ -159,7 +152,7 @@ int main()
         v.pb(t);
         i++;
     }
-    vector <vector <vector <ll> > > ans=apriori(v,500);
+    vector <vector <vector <ll> > > ans=apriori(v,379);
     ll z=0;
     for(auto i : ans)
     {
