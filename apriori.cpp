@@ -5,15 +5,6 @@ using namespace std;
 typedef long long int ll;
 typedef string str;
 
-// void deb(vector <ll> v)
-// {
-// 	for(auto it : v)
-// 	{
-// 		cout << it << " ";
-// 	}
-// 	cout << "\n";
-// }
-
 bool has_infrequent_subset(vector <ll> c,set <vector<ll> > lk)
 {
 	for(ll i=0;i<c.size();i++)
@@ -33,6 +24,7 @@ vector <vector<ll> > apriori_gen(vector <vector<ll> > lk,ll k)
 	set <vector<ll> > lk1;
 	for(auto it:lk)
 	{
+		// sort(it.begin(),it.end());
 		lk1.insert(it);
 	}
 	for(ll l=0;l<n;l++)
@@ -65,28 +57,30 @@ vector <vector <vector <ll> > > apriori(vector <set<ll> > v, ll sup)
 	ll k=1;
 	vector <vector <vector <ll> > > ans;
 	vector <vector <ll> > lk,ck;
-	// For frequent itemsets of size 1
+	// For frequent itemsets of size 1 using hash map
 	map <ll ,ll> m0;
 	for(ll i=0;i<v.size();i++)
 	{
 		for(auto j:v[i])
 			m0[j]++;
 	}
-	priority_queue <pair<ll,ll> > tem;
+	vector <ll> tem;
 	for(auto it:m0)
 	{
 		if(it.second >= sup)
 		{
-			tem.push(mp(it.second,it.first));
+			tem.pb(it.first);
 		}
 	}
-
-	while (!tem.empty()) 
+	if(tem.size()!=0)
 	{
-		vector <ll> p; 
-        p.pb(tem.top().second);
-        lk.pb(p);  
-        tem.pop(); 
+		sort(tem.begin(),tem.end());
+		for(auto it: tem)
+		{
+			vector <ll> p; 
+			p.pb(it);
+			lk.pb(p);
+    	}
     }
     // For frequent itemsets of size greater than 1
 	while(lk.size()!=0)
@@ -94,7 +88,6 @@ vector <vector <vector <ll> > > apriori(vector <set<ll> > v, ll sup)
 		ans.pb(lk);
 		ck=apriori_gen(lk,k);
 		lk.clear();
-		// cout << lk.size() << "\n";
 		k++;
 		ll n=ck.size();
 		ll cnt[n+2]={0};
@@ -118,14 +111,247 @@ vector <vector <vector <ll> > > apriori(vector <set<ll> > v, ll sup)
 		}
 		for(ll l=0;l<n;l++)
 		{
-			if(cnt[l]>sup)
+			if(cnt[l] >= sup)
 			{
 				lk.pb(ck[l]);
 			}
 		}
 		
 	}
+	cout << "\nOUTPUT USING NORMAL APRIORI\n";
 	return ans;
+}
+
+
+
+
+
+
+vector <vector <vector <ll> > > transaction_reduction(vector <set<ll> > v, ll sup)
+{
+	ll k=1;
+	vector <vector <vector <ll> > > ans;
+	vector <vector <ll> > lk,ck;
+	vector <set<ll> > v1,v2;
+	// For frequent itemsets of size 1 using hash map
+	map <ll ,ll> m0;
+	for(ll i=0;i<v.size();i++)
+	{
+		for(auto j:v[i])
+			m0[j]++;
+		if(v[i].size()!=1)
+		{
+			v2.pb(v[i]);
+		}
+	}
+	vector <ll> tem;
+	for(auto it:m0)
+	{
+		if(it.second >= sup)
+		{
+			tem.pb(it.first);
+		}
+	}
+	if(tem.size()!=0)
+	{
+		sort(tem.begin(),tem.end());
+		for(auto it: tem)
+		{
+			vector <ll> p; 
+			p.pb(it);
+			lk.pb(p);
+    	}
+    }
+    vector <ll> temp;
+    // For frequent itemsets of size greater than 1
+	while(lk.size()!=0 && v2.size())
+	{
+		ans.pb(lk);
+		ck=apriori_gen(lk,k);
+		lk.clear();
+		k++;
+		v1.clear();
+		for(auto s:v2)
+		{
+			v1.pb(s);
+		}
+		v2.clear();
+		ll n=ck.size();
+		ll cnt[n+2]={0};
+		if(v1.size()!=0)
+		{
+			for(auto s:v1)
+			{
+				ll flag=0;
+				for(ll l=0;l<n;l++)
+				{
+					ll o=ck[l].size(),m;
+					for(m=0;m<o;m++)
+					{
+						if(s.find(ck[l][m])==s.end())
+						{
+							break;
+						}
+					}
+					if(m==o)
+					{	
+						cnt[l]++;
+						flag=1;	
+					}
+				}
+				if(flag && s.size()>k)
+					v2.pb(s);
+			}
+			
+		}
+		for(ll l=0;l<n;l++)
+		{
+			if(cnt[l] >= sup)
+			{
+				lk.pb(ck[l]);
+			}
+		}
+	}
+	cout << "\nOUTPUT USING TRANSACTION REDUCTION IN APRIORI\n";
+	return ans;
+}
+
+
+
+
+
+vector <vector <vector <ll> > > hashed_apriori(vector <set<ll> > v, ll sup)
+{
+	ll k=1;
+	vector <vector <vector <ll> > > ans;
+	vector <vector <ll> > lk,ck;
+
+	// For frequent itemsets of size 1 and size 2 using hash map
+	map <ll ,ll> m0;
+	map <pair<ll,ll> , ll> m1;	
+	for(ll i=0;i<v.size();i++)
+	{
+		for(auto it=v[i].begin();it!=v[i].end();it++)
+		{
+			it++;
+			auto it1=it;
+			it--;
+			for(;it1!=v[i].end();it1++)
+			{
+				m1[mp(*it,*it1)]++;
+			}
+			m0[*it]++;
+		}
+	}
+
+	vector <ll> tem;
+	for(auto it:m0)
+	{
+		if(it.second >= sup)
+		{
+			tem.pb(it.first);
+		}
+	}
+	if(tem.size()!=0)
+	{
+		sort(tem.begin(),tem.end());
+		for(auto it: tem)
+		{
+			vector <ll> p; 
+			p.pb(it);
+			lk.pb(p);
+    	}
+    	ans.pb(lk);
+    	k++;
+    	lk.clear();
+    }
+    vector < pair<ll,ll> > tem1;
+    for(auto it:m1)
+    {
+    	if(it.second >= sup)
+    	{
+    		tem1.pb(it.first);
+    	}
+    }
+
+    if(tem1.size()!=0)
+    {
+    	for(auto it:tem1) 
+		{
+			vector <ll> p; 
+   			p.pb(it.first);
+   			p.pb(it.second);
+        	lk.pb(p);  
+    	}
+    }
+    // For frequent itemsets of size greater than 1
+	while(lk.size()!=0)
+	{
+		ans.pb(lk);
+		ck=apriori_gen(lk,k);
+		lk.clear();
+		k++;
+		ll n=ck.size();
+		ll cnt[n+2]={0};
+		for(auto s:v)
+		{
+			if(k>s.size())
+				continue;
+			for(ll l=0;l<n;l++)
+			{
+				ll o=ck[l].size(),m;
+				for(m=0;m<o;m++)
+				{
+					if(s.find(ck[l][m])==s.end())
+					{
+						break;
+					}
+				}
+				if(m==o)
+					cnt[l]++;
+			}
+		}
+		for(ll l=0;l<n;l++)
+		{
+			if(cnt[l] >= sup)
+			{
+				lk.pb(ck[l]);
+			}
+		}
+		
+	}
+	cout << "\n\n\nOUTPUT USING HASHED BASED TECHNIQUE IN APRIORI ALGORITHM\n";
+	return ans;
+}
+
+void show_results(vector <vector <vector <ll> > > ans)
+{
+	ll z=0,j,k;
+	if(ans.size()!=0)
+    for(auto i : ans)
+    {
+    	cout << "\nFrequent Itemset of Size=" << ++z << "\n" << i.size() << "\n[";
+        for(j=0;j<i.size()-1;j++)
+        {
+        	cout << "[";
+        	for(k=0;k<i[j].size()-1;k++)
+        	{
+        		cout << i[j][k] << ",";
+        	}
+        	cout << i[j][k] << "],";
+        }
+        cout << "[";
+        for(k=0;k<i[j].size()-1;k++)
+        {
+        	cout << i[j][k] << ",";
+        }
+        cout << i[j][k] << "]";
+        cout << "]\n";
+    }
+    else
+    {
+    	cout << "No Frequent Itemset\n";
+    }
 }
 
 int main()
@@ -136,7 +362,6 @@ int main()
     vector<set<ll>> v;
     while(getline(fin, line))
     {
-        // cout<<line<<endl;
         stringstream s(line);
         string word;
         set<ll> t;
@@ -145,28 +370,20 @@ int main()
             ll temp = stoi(word);
             if(temp > 0)
             {
-                // cout<<temp<<" ";
                 t.insert(temp);
             }
         }
         v.pb(t);
         i++;
     }
-    vector <vector <vector <ll> > > ans=apriori(v,379);
-    ll z=0;
-    for(auto i : ans)
-    {
-    	cout << ++z << "\n";
-        for(auto j:i)
-        {
-        	cout << "[";
-            for(auto k:j)
-            {
-            	cout  <<k << ",";
-            }
-            cout << "]";
-        }
-        cout << "\n";
-    }
+    ll sup;
+    cin >> sup;
+    vector <vector <vector <ll> > > ans,ans1,ans2;
+    // ans=apriori(v,sup);
+    // show_results(ans);
+    // ans1=hashed_apriori(v,sup);
+    // show_results(ans1);
+    ans2=transaction_reduction(v,sup);
+    show_results(ans2);
     return 0;
 }
