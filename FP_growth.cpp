@@ -42,10 +42,11 @@ void FP_Mine(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,i
 void FP_Growth(vector<set<int>> transactions, int min_sup, vector<int> alpha);
 
 void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,int min_sup);
-void FP_Growth_Merge(vector<vector<int>> transactions, int min_sup, vector<int> alpha);
+void FP_Growth_Merge(vector<set<int>> transactions, int min_sup, vector<int> alpha);
 
 void FP_Mine(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,int min_sup)
 {
+    // cout <<"Here FPMINE\n";
     unordered_map <int,vector<node *>> mp;
     reverse(v.begin(),v.end());
     for(auto i:backtrack)
@@ -95,10 +96,10 @@ void FP_Mine(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,i
 
 void FP_Growth( vector< set<int> > transactions, int min_sup, vector<int> alpha )
 {
-    cout <<"Here\n";
+    // cout <<"Here\n";
     vector<pair<int,node*>> backtrack;
     unordered_map<int,int> m0;
-    int hash[1000000] = {0};
+    // int hash[1000000] = {0};
     vector<int> v;
     //SORTING THE TRANSACTIONS BASED ON THE OCCURENCE OF EACH ITEM
         for(auto i : transactions)
@@ -106,7 +107,7 @@ void FP_Growth( vector< set<int> > transactions, int min_sup, vector<int> alpha 
             for(auto j : i)
             {
                 m0[j]++;
-                hash[j]++;
+                // hash[j]++;
             }
         }
         set<int> dellist;
@@ -123,10 +124,10 @@ void FP_Growth( vector< set<int> > transactions, int min_sup, vector<int> alpha 
         {
             return;
         }
-        sort(v.begin(),v.end(),[hash](int i1,int i2) -> bool {  
-        if(hash[i1] == hash[i2])
+        sort(v.begin(),v.end(),[m0](int i1,int i2) -> bool {  
+        if(m0.at(i1) == m0.at(i2))
             return i1 < i2;  
-        return hash[i1] > hash[i2]; 
+        return m0.at(i1) > m0.at(i2); 
         });
         vector<vector<int>> transac_Gen;
         for(int i = 0; i<transactions.size();i++)
@@ -255,7 +256,7 @@ void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> a
     {
         mp[i.first].push_back(i.second);
     }
-    map<int,vector<vector<int>>> final_transaction;
+    map<int,vector<set<int>>> final_transaction;
     unordered_map<node*,int> visit;
     for(auto i:backtrack)
     {
@@ -285,10 +286,10 @@ void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> a
             {
                 if(visit[temp] == 1)
                     continue;
-                vector<int> newtr;
+                set<int> newtr;
                 for(int k = i; k<size;k++)
                 {
-                    newtr.push_back(tra[k]);
+                    newtr.insert(tra[k]);
                 }
                 for(int j = 0; j<temp->freq;j++)
                 {
@@ -329,159 +330,164 @@ void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> a
     }
 }
 
-void FP_Growth_Merge(vector<vector<int>> transactions, int min_sup, vector<int> alpha)
+void FP_Growth_Merge(vector<set<int>> transactions, int min_sup, vector<int> alpha)
 {
+    // cout <<"Here\n";
     vector<pair<int,node*>> backtrack;
     unordered_map<int,int> m0;
+    // int hash[1000000] = {0};
     vector<int> v;
-    for(auto i : transactions)
-    {
-        for(auto j : i)
+    //SORTING THE TRANSACTIONS BASED ON THE OCCURENCE OF EACH ITEM
+        for(auto i : transactions)
         {
-            m0[j]++;
-        }
-    }
-    set<int> dellist;
-    for(auto i : m0)
-    {
-        if(i.second >= min_sup)
-            v.push_back(i.first);
-        else
-        {
-            dellist.insert(i.first);
-        } 
-    }
-    //cout <<"DelList\n";
-    for(auto i : dellist)
-    {
-        //cout <<i<<" ";
-    }
-    //cout <<"Deldone\n";
-    sort(v.begin(),v.end(),[m0](int i1,int i2) -> bool {  
-    if(m0.at(i1) == m0.at(i2))
-        return i1 < i2;  
-    return m0.at(i1) > m0.at(i2); 
-    });
-    for(auto i: v)
-    {
-        //cout <<i<<" ";
-    }
-    //cout <<endl;
-
-    for(int i = 0; i<transactions.size();i++)
-    {
-        sort(transactions[i].begin(),transactions[i].end(),[m0](int i1,int i2) -> bool {
-            if(m0.at(i1) == m0.at(i2))
-                return i1 < i2;  
-    return m0.at(i1) > m0.at(i2); 
-    });
-    }
-
-    node *a = new node();
-    a->item = -1;
-    a->freq = 0;
-    a->parent = NULL;
-
-    for(auto i : transactions)
-    {
-        node *cur = a;
-        for(auto j : i)
-        {
-            if(dellist.find(j) != dellist.end())
+            for(auto j : i)
             {
+                m0[j]++;
+                // hash[j]++;
+            }
+        }
+        set<int> dellist;
+        for(auto i : m0)
+        {
+            if(i.second >= min_sup)
+                v.push_back(i.first);
+            else
+            {
+                dellist.insert(i.first);
+            } 
+        }
+        if(v.empty())
+        {
+            return;
+        }
+        sort(v.begin(),v.end(),[m0](int i1,int i2) -> bool {  
+        if(m0.at(i1) == m0.at(i2))
+            return i1 < i2;  
+        return m0.at(i1) > m0.at(i2); 
+        });
+        vector<vector<int>> transac_Gen;
+        for(int i = 0; i<transactions.size();i++)
+        {
+            vector<int> vt;
+            for(auto j:v)
+            {
+                if(transactions[i].find(j) != transactions[i].end())
+                    vt.push_back(j);
+            } 
+            transac_Gen.push_back(vt);
+        }
+    // FINISHED SORTING EACH TRANSACTION
+
+
+    // BUILD TREE
+        node *a = new node();
+        a->item = -1;
+        a->freq = 0;
+        a->parent = NULL;
+
+        for(auto i : transac_Gen)
+        {
+            node *cur = a;
+            for(auto j : i)
+            {
+                if(dellist.find(j) != dellist.end())
+                {
+                    break;
+                }
+                if(cur->pointer.find(j) != cur->pointer.end())
+                {
+                    cur->pointer[j]->freq++;
+                    cur = cur->pointer[j];
+                }
+                else
+                {
+                    node *temp = new node();
+                    temp->item = j;
+                    temp->freq = 1;
+                    temp->parent = cur;
+                    cur->pointer[j] = temp;
+                    cur = cur->pointer[j];
+                    backtrack.push_back({temp->item,temp});
+                }
+            }
+        }
+    // FINISH BUILD TREE
+
+
+    // CHECK FOR SINGLE PATH TREE AND PERFORM THE OPERATION FOR THAT ACCORDINGLY
+        node *cur = a;
+        int flag = 0;
+        while(cur != NULL)
+        {
+            if(cur->pointer.size() > 1)
+            {
+                flag = 1;
                 break;
             }
-            if(cur->pointer.find(j) != cur->pointer.end())
+            else if(cur->pointer.size() == 0)
             {
-                cur->pointer[j]->freq++;
-                cur = cur->pointer[j];
-                // //cout<<j<<" "<<"value\n";
+                break;
             }
             else
             {
-                node *temp = new node();
-                temp->item = j;
-                temp->freq = 1;
-                temp->parent = cur;
-                cur->pointer[j] = temp;
-                cur = cur->pointer[j];
-                backtrack.push_back({temp->item,temp});
-            }
+                for(auto j : cur->pointer)
+                {
+                    cur = j.second;
+                }
+            }  
         }
-    }
-    sort(backtrack.begin(),backtrack.end(),[m0](pair<int,node*> i1, pair<int,node*> i2)->bool {
-    if(m0.at(i1.first) == m0.at(i2.first))
-    {
-        return i1 > i2;
-    }
-    return m0.at(i1.first) < m0.at(i2.first); 
-    });
-    //cout <<"printing Tree\n";
-    print_Tree(a);
-    node *cur = a;
-    int flag = 0;
-    while(cur != NULL)
-    {
-        if(cur->pointer.size() > 1)
+        if(flag == 0)
         {
-            flag = 1;
-            break;
-        }
-        else if(cur->pointer.size() == 0)
-        {
-            break;
-        }
-        else
-        {
-            for(auto j : cur->pointer)
+            node *cur = a;
+            vector<int> gen;
+            while(1)
             {
-                cur = j.second;
+                if(cur->pointer.size() == 0)
+                    break;
+                auto i = cur->pointer.begin();
+                gen.push_back(i->first);
+                cur = i->second;
             }
-        }  
-    }
-    //cout <<flag<<endl;
-    if(flag == 0)
-    {
-        node *cur = a;
-        vector<int> gen;
-        while(1)
-        {
-            if(cur->pointer.size() == 0)
-                break;
-            auto i = cur->pointer.begin();
-            gen.push_back(i->first);
-            cur = i->second;
-        }
-        int num = pow(2,gen.size());
-        for(int i = 1; i<num;i++)
-        {
-            string s = get_binary(i);
-            vector<int> ans_add;
-            for(auto i : alpha)
+            int num = pow(2,gen.size());
+            for(int i = 1; i<num;i++)
             {
-                ans_add.push_back(i);
+                string s = get_binary(i);
+                vector<int> ans_add;
+                for(auto i : alpha)
+                {
+                    ans_add.push_back(i);
+                }
+                for(int i = 0; i<gen.size();i++)
+                {
+                    if(s[i] == '1')
+                        ans_add.push_back(gen[i]);
+                }
+                finalans.push_back(ans_add);
             }
-            for(int i = 0; i<gen.size();i++)
-            {
-                if(s[i] == '1')
-                    ans_add.push_back(gen[i]);
-            }
-            finalans.push_back(ans_add);
+            node *ret = nullptr;
+            return;
         }
-        node *ret = nullptr;
-        return ;
-    }
+    // FINISH CHECK FOR SINGLE PATH TREE
+
+
+    // CALL FP_MINE IF NOT SINGLE PATH
+        // sort(backtrack.begin(),backtrack.end(),[m0](pair<int,node*> i1, pair<int,node*> i2)->bool {
+        //         if(m0.at(i1.first) == m0.at(i2.first))
+        //         {
+        //             return i1 > i2;
+        //         }
+        //         return m0.at(i1.first) < m0.at(i2.first); 
+        //         });
+        FP_Mine(backtrack,v,alpha,min_sup);
+    // FINISH CALL FP_MINE
     
-    FP_Mine_Merge(backtrack,v,alpha,min_sup);
-    // FP tree start at node a
-    // Call FP MINING ALGO HERE
-    return ;
+    return;
 }
 
 signed main()
 {
     // step 1 - use Curl to read the file eg. curl 'http://www.philippe-fournier-viger.com/spmf/datasets/BMS1_spmf' > abc.txt 
-    ifstream fin("test.txt", ios::in);
+    ifstream fin("abc.txt", ios::in);
     string line;
     int i = 0;
     vector<set<int>> v;
@@ -502,14 +508,6 @@ signed main()
             }
         }
         v.push_back(t);
-    }
-    for(auto i : v)
-    {
-        for(auto j: i)
-        {
-            cout <<j<<" ";
-        }
-        cout <<endl;
     }
     // cout <<"ENTER SUPPORT COUNT % : "<<endl;
     // double mins;
@@ -540,29 +538,29 @@ signed main()
         cout <<" | ";
         cursize = i.size();
     }
-    // finalans.clear();
-    // alpha.clear();
-    // start = high_resolution_clock::now();
-    // FP_Growth_Merge(v,minsup,alpha);
-    // stop = high_resolution_clock::now();
-    // duration = duration_cast<microseconds>(stop - start); 
-    // cout << "TIME TAKEN BY ALGORITHM WITH MERGE OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
-    // cout <<"Printing Frequent\n";
-    // sort(finalans.begin(),finalans.end(),[](vector<int> v1,vector<int>v2)->bool
-    // {
-    //     return v1.size() < v2.size();
-    // });
-    // cursize = 1;
-    // for(auto i : finalans)
-    // {
-    //     if(i.size() > cursize)
-    //         cout <<endl;
-    //     for(auto j : i)
-    //     {
-    //         cout <<j<<" ";
-    //     }
-    //     cout <<" | ";
-    //     cursize = i.size();
-    // }
+    finalans.clear();
+    alpha.clear();
+    start = high_resolution_clock::now();
+    FP_Growth_Merge(v,minsup,alpha);
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start); 
+    cout << "TIME TAKEN BY ALGORITHM WITH MERGE OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
+    cout <<"Printing Frequent\n";
+    sort(finalans.begin(),finalans.end(),[](vector<int> v1,vector<int>v2)->bool
+    {
+        return v1.size() < v2.size();
+    });
+    cursize = 1;
+    for(auto i : finalans)
+    {
+        if(i.size() > cursize)
+            cout <<endl;
+        for(auto j : i)
+        {
+            cout <<j<<" ";
+        }
+        cout <<" | ";
+        cursize = i.size();
+    }
 	return 0;
 }
