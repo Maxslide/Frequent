@@ -484,6 +484,58 @@ void FP_Growth_Merge(vector<set<int>> transactions, int min_sup, vector<int> alp
     return;
 }
 
+void show_results( vector <vector <int> >  answer)
+{
+	vector <vector <vector <int> > > ans;
+    int si=1;
+    vector < vector <int> > temp;
+    for(auto it:finalans)
+    {
+    	if(it.size()==si)
+    	{
+    		temp.push_back(it);
+    	}
+    	else
+    	{
+    		ans.push_back(temp);
+    		temp.clear();
+    		si++;
+    		temp.push_back(it);
+    	}
+    }
+    if(temp.size()!=0)
+    {
+    	ans.push_back(temp);
+    }
+	int z=0,j,k;
+	if(ans.size()!=0)
+    for(auto i : ans)
+    {
+    	cout << "\nNUMBER OF FREQUENT ITEMSETS OF SIZE=" << ++z << " ARE " << i.size() << " WHICH ARE-\n\n[";
+        for(j=0;j<i.size()-1;j++)
+        {
+        	cout << "[";
+        	for(k=0;k<i[j].size()-1;k++)
+        	{
+        		cout << i[j][k] << ",";
+        	}
+        	cout << i[j][k] << "],";
+        }
+        cout << "[";
+        for(k=0;k<i[j].size()-1;k++)
+        {
+        	cout << i[j][k] << ",";
+        }
+        cout << i[j][k] << "]";
+        cout << "]\n";
+    }
+    else
+    {
+    	cout << "\nNO FREQUENT ITEMSETS\n";
+    }
+    cout << "\n\n";
+}
+
 signed main()
 {
     // step 1 - use Curl to read the file eg. curl 'http://www.philippe-fournier-viger.com/spmf/datasets/BMS1_spmf' > abc.txt 
@@ -523,47 +575,25 @@ signed main()
     FP_Growth(v,minsup,alpha);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start); 
-    cout << "TIME TAKEN BY ALGORITHM WITHOUT OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
-    cout <<"Printing Frequent\n";
+    cout << "\nTIME TAKEN BY ALGORITHM WITHOUT OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
+
     sort(finalans.begin(),finalans.end(),[](vector<int> v1,vector<int>v2)->bool
     {
         return v1.size() < v2.size();
     });
-    int cursize = 1;
-    for(auto i : finalans)
-    {
-        if(i.size() > cursize)
-            cout <<endl;
-        for(auto j : i)
-        {
-            cout <<j<<" ";
-        }
-        cout <<" | ";
-        cursize = i.size();
-    }
+    show_results(finalans);
+
     finalans.clear();
     alpha.clear();
     start = high_resolution_clock::now();
     FP_Growth_Merge(v,minsup,alpha);
     stop = high_resolution_clock::now();
     duration = duration_cast<microseconds>(stop - start); 
-    cout << "TIME TAKEN BY ALGORITHM WITH MERGE OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
-    cout <<"Printing Frequent\n";
+    cout << "\nTIME TAKEN BY ALGORITHM WITH MERGE OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
     sort(finalans.begin(),finalans.end(),[](vector<int> v1,vector<int>v2)->bool
     {
         return v1.size() < v2.size();
     });
-    cursize = 1;
-    for(auto i : finalans)
-    {
-        if(i.size() > cursize)
-            cout <<endl;
-        for(auto j : i)
-        {
-            cout <<j<<" ";
-        }
-        cout <<" | ";
-        cursize = i.size();
-    }
+    show_results(finalans);
 	return 0;
 }

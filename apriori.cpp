@@ -457,7 +457,7 @@ void show_results(vector <vector <vector <ll> > > ans)
     }
     else
     {
-    	cout << "No Frequent Itemset\n";
+    	cout << "\nNO FREQUENT ITEMSETS\n";
     }
     cout << "\n\n";
 }
