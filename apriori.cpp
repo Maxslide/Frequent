@@ -119,95 +119,7 @@ vector <vector <vector <ll> > > apriori(vector <set<ll> > v, ll sup)
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<microseconds>(stop - start); 
 	cout << "TIME TAKEN BY ALGORITHM IS "<< float(duration.count()/1000000.0) << " seconds" << endl;
-	cout << "\nOUTPUT USING NORMAL APRIORI\n";
 	
-	return ans;
-}
-
-
-
-vector <vector <vector <ll> > > transaction_reduction(vector <set<ll> > v, ll sup)
-{
-	cout << "\n--------------------TRANSACTION REDUCTION ONLY--------------------\n\n";
-	auto start = high_resolution_clock::now();
-	ll k=1;
-	vector <vector <vector <ll> > > ans;
-	vector <vector <ll> > lk,ck;
-	vector <set<ll> > v1,v2;
-	// For frequent itemsets of size 1 using hash map
-	map <ll ,ll> m0;
-	for(ll i=0;i<v.size();i++)
-	{
-		for(auto j:v[i])
-			m0[j]++;
-		if(v[i].size()>1)
-		{
-			v2.pb(v[i]);
-		}
-	}
-	for(auto it:m0)
-	{
-		if(it.second >= sup)
-		{
-			vector <ll> p; 
-			p.pb(it.first);
-			lk.pb(p);
-		}
-	}
-    vector <ll> temp;
-    // For frequent itemsets of size greater than 1
-	while(lk.size()!=0 && v2.size())
-	{
-		ans.pb(lk);
-		ck=apriori_gen(lk,k);
-		lk.clear();
-		k++;
-		v1.clear();
-		for(auto s:v2)
-		{
-			v1.pb(s);
-		}
-		v2.clear();
-		ll n=ck.size();
-		ll cnt[n+2]={0};
-		if(v1.size()!=0)
-		{
-			for(auto s:v1)
-			{
-				ll flag=0;
-				for(ll l=0;l<n;l++)
-				{
-					ll o=ck[l].size(),m;
-					for(m=0;m<o;m++)
-					{
-						if(s.find(ck[l][m])==s.end())
-						{
-							break;
-						}
-					}
-					if(m==o)
-					{	
-						cnt[l]++;
-						flag=1;	
-					}
-				}
-				if(flag && s.size()>k)
-					v2.pb(s);
-			}
-			
-		}
-		for(ll l=0;l<n;l++)
-		{
-			if(cnt[l] >= sup)
-			{
-				lk.pb(ck[l]);
-			}
-		}
-	}
-	auto stop = high_resolution_clock::now(); 
-	auto duration = duration_cast<microseconds>(stop - start); 
-	cout << "TIME TAKEN BY ALGORITHM IS "<< float(duration.count()/1000000.0) << " seconds" << endl;
-	cout << "\nOUTPUT USING TRANSACTION REDUCTION IN APRIORI\n";
 	return ans;
 }
 
@@ -307,8 +219,93 @@ vector <vector <vector <ll> > > hashed_apriori(vector <set<ll> > v, ll sup)
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<microseconds>(stop - start); 
 	cout << "TIME TAKEN BY ALGORITHM IS "<< float(duration.count()/1000000.0) << " seconds" << endl;
-	cout << "\nOUTPUT USING HASHED BASED TECHNIQUE IN APRIORI ALGORITHM\n";
 	
+	return ans;
+}
+
+
+
+vector <vector <vector <ll> > > transaction_reduction(vector <set<ll> > v, ll sup)
+{
+	cout << "\n--------------------TRANSACTION REDUCTION ONLY--------------------\n\n";
+	auto start = high_resolution_clock::now();
+	ll k=1;
+	vector <vector <vector <ll> > > ans;
+	vector <vector <ll> > lk,ck;
+	vector <set<ll> > v1,v2;
+	// For frequent itemsets of size 1 using hash map
+	map <ll ,ll> m0;
+	for(ll i=0;i<v.size();i++)
+	{
+		for(auto j:v[i])
+			m0[j]++;
+		if(v[i].size()>1)
+		{
+			v2.pb(v[i]);
+		}
+	}
+	for(auto it:m0)
+	{
+		if(it.second >= sup)
+		{
+			vector <ll> p; 
+			p.pb(it.first);
+			lk.pb(p);
+		}
+	}
+    vector <ll> temp;
+    // For frequent itemsets of size greater than 1
+	while(lk.size()!=0 && v2.size())
+	{
+		ans.pb(lk);
+		ck=apriori_gen(lk,k);
+		lk.clear();
+		k++;
+		v1.clear();
+		for(auto s:v2)
+		{
+			v1.pb(s);
+		}
+		v2.clear();
+		ll n=ck.size();
+		ll cnt[n+2]={0};
+		if(v1.size()!=0)
+		{
+			for(auto s:v1)
+			{
+				ll flag=0;
+				for(ll l=0;l<n;l++)
+				{
+					ll o=ck[l].size(),m;
+					for(m=0;m<o;m++)
+					{
+						if(s.find(ck[l][m])==s.end())
+						{
+							break;
+						}
+					}
+					if(m==o)
+					{	
+						cnt[l]++;
+						flag=1;	
+					}
+				}
+				if(flag && s.size()>k)
+					v2.pb(s);
+			}
+			
+		}
+		for(ll l=0;l<n;l++)
+		{
+			if(cnt[l] >= sup)
+			{
+				lk.pb(ck[l]);
+			}
+		}
+	}
+	auto stop = high_resolution_clock::now(); 
+	auto duration = duration_cast<microseconds>(stop - start); 
+	cout << "TIME TAKEN BY ALGORITHM IS "<< float(duration.count()/1000000.0) << " seconds" << endl;
 	return ans;
 }
 
@@ -428,7 +425,6 @@ vector <vector <vector <ll> > > reduction_hashed_apriori(vector <set<ll> > v, ll
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<microseconds>(stop - start); 
 	cout << "TIME TAKEN BY ALGORITHM IS "<< float(duration.count()/1000000.0) << " seconds" << endl;
-	cout << "\nOUTPUT USING HASHED BASED TECHNIQUE IN APRIORI ALGORITHM\n";
 	
 	return ans;
 }
@@ -441,7 +437,7 @@ void show_results(vector <vector <vector <ll> > > ans)
 	if(ans.size()!=0)
     for(auto i : ans)
     {
-    	cout << "\nFrequent Itemset of Size=" << ++z << "\n" << i.size() << "\n[";
+    	cout << "\nNUMBER OF FREQUENT ITEMSETS OF SIZE=" << ++z << " ARE " << i.size() << " WHICH ARE-\n\n[";
         for(j=0;j<i.size()-1;j++)
         {
         	cout << "[";
