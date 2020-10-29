@@ -162,6 +162,9 @@ vector <vector <vector <ll> > > hashed_apriori(vector <set<ll> > v, ll sup)
 	}
 	if(lk.size()==0)
 	{
+		auto stop = high_resolution_clock::now(); 
+		auto duration = duration_cast<microseconds>(stop - start); 
+		cout << "TIME TAKEN BY ALGORITHM IS "<< float(duration.count()/1000000.0) << " seconds" << endl;
 		return ans;	
     }
     ans.pb(lk);
@@ -353,6 +356,9 @@ vector <vector <vector <ll> > > reduction_hashed_apriori(vector <set<ll> > v, ll
 	}
 	if(lk.size()==0)
 	{
+		auto stop = high_resolution_clock::now(); 
+		auto duration = duration_cast<microseconds>(stop - start); 
+		cout << "TIME TAKEN BY ALGORITHM IS "<< float(duration.count()/1000000.0) << " seconds" << endl;
 		return ans;	
     }
     ans.pb(lk);
