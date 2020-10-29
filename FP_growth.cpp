@@ -1,6 +1,7 @@
 #include<bits/stdc++.h>
 #include<fstream>
 using namespace std;
+using namespace std::chrono;
 #define int long long
 
 struct node
@@ -38,7 +39,7 @@ void print_Tree(node *cur)
 
 }
 void FP_Mine(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,int min_sup);
-void FP_Growth(vector<vector<int>> transactions, int min_sup, vector<int> alpha);
+void FP_Growth(vector<set<int>> transactions, int min_sup, vector<int> alpha);
 
 void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,int min_sup);
 void FP_Growth_Merge(vector<vector<int>> transactions, int min_sup, vector<int> alpha);
@@ -61,15 +62,15 @@ void FP_Mine(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,i
     //cout <<endl;
     for(auto i:v)
     {
-        vector<vector<int>> transaction;
+        vector<set<int>> transaction;
         for(auto j : mp[i])
         {
             // Put in the new transaction array here.
             node *cur = j;
-            vector<int> tra;
+            set<int> tra;
             while(cur->parent->item != -1)
             {
-                tra.push_back(cur->parent->item);
+                tra.insert(cur->parent->item);
                 cur = cur->parent;
             }
             for(int i = 0; i< j->freq; i++)
@@ -86,166 +87,164 @@ void FP_Mine(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,i
         beta.push_back(i);
         //cout <<i<<" "<<endl;
         finalans.push_back(beta);
-        for(auto i : transaction)
-        {
-            for(auto j: i)
-            {
-                //cout <<j<<" ";
-            }
-            //cout <<endl;
-        }
         FP_Growth(transaction,min_sup,beta);
         // break;
         // Call the make tree function here
     }
 }
 
-void FP_Growth(vector<vector<int>> transactions, int min_sup, vector<int> alpha)
+void FP_Growth( vector< set<int> > transactions, int min_sup, vector<int> alpha )
 {
+    cout <<"Here\n";
     vector<pair<int,node*>> backtrack;
     unordered_map<int,int> m0;
+    int hash[1000000] = {0};
     vector<int> v;
-    for(auto i : transactions)
-    {
-        for(auto j : i)
+    //SORTING THE TRANSACTIONS BASED ON THE OCCURENCE OF EACH ITEM
+        for(auto i : transactions)
         {
-            m0[j]++;
-        }
-    }
-    set<int> dellist;
-    for(auto i : m0)
-    {
-        if(i.second >= min_sup)
-            v.push_back(i.first);
-        else
-        {
-            dellist.insert(i.first);
-        } 
-    }
-    //cout <<"DelList\n";
-    for(auto i : dellist)
-    {
-        //cout <<i<<" ";
-    }
-    //cout <<"Deldone\n";
-    sort(v.begin(),v.end(),[m0](int i1,int i2) -> bool {  
-    if(m0.at(i1) == m0.at(i2))
-        return i1 < i2;  
-    return m0.at(i1) > m0.at(i2); 
-    });
-    for(auto i: v)
-    {
-        //cout <<i<<" ";
-    }
-    //cout <<endl;
-
-    for(int i = 0; i<transactions.size();i++)
-    {
-        sort(transactions[i].begin(),transactions[i].end(),[m0](int i1,int i2) -> bool {
-            if(m0.at(i1) == m0.at(i2))
-                return i1 < i2;  
-    return m0.at(i1) > m0.at(i2); 
-    });
-    }
-
-    node *a = new node();
-    a->item = -1;
-    a->freq = 0;
-    a->parent = NULL;
-
-    for(auto i : transactions)
-    {
-        node *cur = a;
-        for(auto j : i)
-        {
-            if(dellist.find(j) != dellist.end())
+            for(auto j : i)
             {
+                m0[j]++;
+                hash[j]++;
+            }
+        }
+        set<int> dellist;
+        for(auto i : m0)
+        {
+            if(i.second >= min_sup)
+                v.push_back(i.first);
+            else
+            {
+                dellist.insert(i.first);
+            } 
+        }
+        if(v.empty())
+        {
+            return;
+        }
+        sort(v.begin(),v.end(),[hash](int i1,int i2) -> bool {  
+        if(hash[i1] == hash[i2])
+            return i1 < i2;  
+        return hash[i1] > hash[i2]; 
+        });
+        vector<vector<int>> transac_Gen;
+        for(int i = 0; i<transactions.size();i++)
+        {
+            vector<int> vt;
+            for(auto j:v)
+            {
+                if(transactions[i].find(j) != transactions[i].end())
+                    vt.push_back(j);
+            } 
+            transac_Gen.push_back(vt);
+        }
+    // FINISHED SORTING EACH TRANSACTION
+
+
+    // BUILD TREE
+        node *a = new node();
+        a->item = -1;
+        a->freq = 0;
+        a->parent = NULL;
+
+        for(auto i : transac_Gen)
+        {
+            node *cur = a;
+            for(auto j : i)
+            {
+                if(dellist.find(j) != dellist.end())
+                {
+                    break;
+                }
+                if(cur->pointer.find(j) != cur->pointer.end())
+                {
+                    cur->pointer[j]->freq++;
+                    cur = cur->pointer[j];
+                }
+                else
+                {
+                    node *temp = new node();
+                    temp->item = j;
+                    temp->freq = 1;
+                    temp->parent = cur;
+                    cur->pointer[j] = temp;
+                    cur = cur->pointer[j];
+                    backtrack.push_back({temp->item,temp});
+                }
+            }
+        }
+    // FINISH BUILD TREE
+
+
+    // CHECK FOR SINGLE PATH TREE AND PERFORM THE OPERATION FOR THAT ACCORDINGLY
+        node *cur = a;
+        int flag = 0;
+        while(cur != NULL)
+        {
+            if(cur->pointer.size() > 1)
+            {
+                flag = 1;
                 break;
             }
-            if(cur->pointer.find(j) != cur->pointer.end())
+            else if(cur->pointer.size() == 0)
             {
-                cur->pointer[j]->freq++;
-                cur = cur->pointer[j];
-                // //cout<<j<<" "<<"value\n";
+                break;
             }
             else
             {
-                node *temp = new node();
-                temp->item = j;
-                temp->freq = 1;
-                temp->parent = cur;
-                cur->pointer[j] = temp;
-                cur = cur->pointer[j];
-                backtrack.push_back({temp->item,temp});
-            }
+                for(auto j : cur->pointer)
+                {
+                    cur = j.second;
+                }
+            }  
         }
-    }
-    //cout <<"printing Tree\n";
-    print_Tree(a);
-    node *cur = a;
-    int flag = 0;
-    while(cur != NULL)
-    {
-        if(cur->pointer.size() > 1)
+        if(flag == 0)
         {
-            flag = 1;
-            break;
-        }
-        else if(cur->pointer.size() == 0)
-        {
-            break;
-        }
-        else
-        {
-            for(auto j : cur->pointer)
+            node *cur = a;
+            vector<int> gen;
+            while(1)
             {
-                cur = j.second;
+                if(cur->pointer.size() == 0)
+                    break;
+                auto i = cur->pointer.begin();
+                gen.push_back(i->first);
+                cur = i->second;
             }
-        }  
-    }
-    //cout <<flag<<endl;
-    if(flag == 0)
-    {
-        node *cur = a;
-        vector<int> gen;
-        while(1)
-        {
-            if(cur->pointer.size() == 0)
-                break;
-            auto i = cur->pointer.begin();
-            gen.push_back(i->first);
-            cur = i->second;
-        }
-        int num = pow(2,gen.size());
-        for(int i = 1; i<num;i++)
-        {
-            string s = get_binary(i);
-            vector<int> ans_add;
-            for(auto i : alpha)
+            int num = pow(2,gen.size());
+            for(int i = 1; i<num;i++)
             {
-                ans_add.push_back(i);
+                string s = get_binary(i);
+                vector<int> ans_add;
+                for(auto i : alpha)
+                {
+                    ans_add.push_back(i);
+                }
+                for(int i = 0; i<gen.size();i++)
+                {
+                    if(s[i] == '1')
+                        ans_add.push_back(gen[i]);
+                }
+                finalans.push_back(ans_add);
             }
-            for(int i = 0; i<gen.size();i++)
-            {
-                if(s[i] == '1')
-                    ans_add.push_back(gen[i]);
-            }
-            finalans.push_back(ans_add);
+            node *ret = nullptr;
+            return;
         }
-        node *ret = nullptr;
-        return ;
-    }
-    sort(backtrack.begin(),backtrack.end(),[m0](pair<int,node*> i1, pair<int,node*> i2)->bool {
-        if(m0.at(i1.first) == m0.at(i2.first))
-    {
-        return i1 > i2;
-    }
-    return m0.at(i1.first) < m0.at(i2.first); 
-    });
-    FP_Mine(backtrack,v,alpha,min_sup);
-    // FP tree start at node a
-    // Call FP MINING ALGO HERE
-    return ;
+    // FINISH CHECK FOR SINGLE PATH TREE
+
+
+    // CALL FP_MINE IF NOT SINGLE PATH
+        // sort(backtrack.begin(),backtrack.end(),[m0](pair<int,node*> i1, pair<int,node*> i2)->bool {
+        //         if(m0.at(i1.first) == m0.at(i2.first))
+        //         {
+        //             return i1 > i2;
+        //         }
+        //         return m0.at(i1.first) < m0.at(i2.first); 
+        //         });
+        FP_Mine(backtrack,v,alpha,min_sup);
+    // FINISH CALL FP_MINE
+    
+    return;
 }
 
 void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> alpha,int min_sup)
@@ -262,13 +261,16 @@ void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> a
     {
         visit[i.second] = 0;
     }
-    for(auto bt:backtrack)
+    for(auto ab:v)
     {
-        if(visit[bt.second] == 1)
+
+    for(auto bt:mp[ab])
+    {
+        if(visit[bt] == 1)
             continue;
         else
         {
-            node *cur = bt.second;
+            node *cur = bt;
             vector<int> tra;
             vector<node*> tra2;
             while(cur->parent->item != -1)
@@ -278,7 +280,7 @@ void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> a
                 cur = cur->parent;
             }
             int size = tra.size();
-            node *temp = bt.second;
+            node *temp = bt;
             for(int i = 0; i<size;i++)
             {
                 if(visit[temp] == 1)
@@ -298,18 +300,19 @@ void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> a
                 
         }
     }
+    }
     for(auto i:v)
     {
         vector<vector<int>> transaction;
-        for(auto i : final_transaction[i])
-        {
-            vector<int> tra;
-            for(auto j:i)
-            {
-                tra.push_back(j);
-            }
-            transaction.push_back(tra);
-        }
+        // for(auto i : final_transaction[i])
+        // {
+        //     vector<int> tra;
+        //     for(auto j:i)
+        //     {
+        //         tra.push_back(j);
+        //     }
+        //     transaction.push_back(tra);
+        // }
         vector<int> beta;
         //cout <<"ALPHA : ";
         for(auto j : alpha)
@@ -320,12 +323,11 @@ void FP_Mine_Merge(vector<pair<int,node*>> backtrack,vector<int> v,vector<int> a
         beta.push_back(i);
         //cout <<i<<" "<<endl;
         finalans.push_back(beta);
-        FP_Growth_Merge(transaction,min_sup,beta);
+        FP_Growth_Merge(final_transaction[i],min_sup,beta);
         // break;
         // Call the make tree function here
     }
 }
-
 
 void FP_Growth_Merge(vector<vector<int>> transactions, int min_sup, vector<int> alpha)
 {
@@ -479,41 +481,48 @@ void FP_Growth_Merge(vector<vector<int>> transactions, int min_sup, vector<int> 
 signed main()
 {
     // step 1 - use Curl to read the file eg. curl 'http://www.philippe-fournier-viger.com/spmf/datasets/BMS1_spmf' > abc.txt 
-    ifstream fin("abc.txt", ios::in);
+    ifstream fin("test.txt", ios::in);
     string line;
     int i = 0;
-    vector<vector<int>> v;
-    // int abc = 1;
+    vector<set<int>> v;
+    int abc = 0;
     while(getline(fin, line))
     {
         // //cout<<line<<endl;
         stringstream s(line);
         string word;
-        vector<int> t;
-        // cout << abc<<endl;
-        // abc++;
+        set<int> t;
+        abc++;
         while(getline(s,word,' '))
         {
             int temp = stoi(word);
             if(temp > 0)
             {
-                // //cout<<temp<<" ";
-                t.push_back(temp);
+                t.insert(temp);
             }
         }
         v.push_back(t);
-        // //cout <<endl;
     }
-    // for(auto i : v)
-    // {
-    //     for(auto j : i)
-    //     {
-    //         //cout<<j<<" ";
-    //     }
-    //     //cout <<endl;
-    // }
+    for(auto i : v)
+    {
+        for(auto j: i)
+        {
+            cout <<j<<" ";
+        }
+        cout <<endl;
+    }
+    // cout <<"ENTER SUPPORT COUNT % : "<<endl;
+    // double mins;
+    // cin >>mins;
+    // int minsup = ceil(((mins*abc)/100.0));
+    int minsup = 410;
+    cout <<"Support value is : "<<minsup<<endl;
     vector<int> alpha;
-    FP_Growth_Merge(v,410,alpha);
+    auto start = high_resolution_clock::now();
+    FP_Growth(v,minsup,alpha);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start); 
+    cout << "TIME TAKEN BY ALGORITHM WITHOUT OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
     cout <<"Printing Frequent\n";
     sort(finalans.begin(),finalans.end(),[](vector<int> v1,vector<int>v2)->bool
     {
@@ -531,6 +540,29 @@ signed main()
         cout <<" | ";
         cursize = i.size();
     }
+    // finalans.clear();
+    // alpha.clear();
+    // start = high_resolution_clock::now();
+    // FP_Growth_Merge(v,minsup,alpha);
+    // stop = high_resolution_clock::now();
+    // duration = duration_cast<microseconds>(stop - start); 
+    // cout << "TIME TAKEN BY ALGORITHM WITH MERGE OPTIMISATION "<< float(duration.count()/1000000.0) << " seconds" << endl;
+    // cout <<"Printing Frequent\n";
+    // sort(finalans.begin(),finalans.end(),[](vector<int> v1,vector<int>v2)->bool
+    // {
+    //     return v1.size() < v2.size();
+    // });
+    // cursize = 1;
+    // for(auto i : finalans)
+    // {
+    //     if(i.size() > cursize)
+    //         cout <<endl;
+    //     for(auto j : i)
+    //     {
+    //         cout <<j<<" ";
+    //     }
+    //     cout <<" | ";
+    //     cursize = i.size();
+    // }
 	return 0;
-
 }
