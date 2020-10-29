@@ -8,6 +8,7 @@ struct node
     map<int,node*> pointer;
     int freq;
     int item;
+    int parent;
 };
 map<int,int> m0;
 
@@ -42,10 +43,6 @@ auto FP_Growth(vector<vector<int>> transactions)
     }
     sort(v.begin(),v.end(),compareInterval);
 
-    // for(int i = 0; i<v.size(); i++)
-    // {
-    //     cout << v[i]<<" "<<m0[v[i]]<<endl;
-    // }
     for(int i = 0; i<transactions.size();i++)
     {
         sort(transactions[i].begin(),transactions[i].end(),compareInterval);
@@ -54,6 +51,7 @@ auto FP_Growth(vector<vector<int>> transactions)
     node *a = new node();
     a->item = -1;
     a->freq = 0;
+    a->parent = -1;
 
     for(auto i : transactions)
     {
@@ -71,6 +69,7 @@ auto FP_Growth(vector<vector<int>> transactions)
                 node *temp = new node();
                 temp->item = j;
                 temp->freq = 1;
+                temp->parent = cur;
                 cur->pointer[j] = temp;
                 cur = cur->pointer[j];
             }
@@ -78,7 +77,9 @@ auto FP_Growth(vector<vector<int>> transactions)
     }
     
     print_Tree(a);
-    return 0;
+    // FP tree start at node a
+
+    return a;
 }
  
 signed main()
