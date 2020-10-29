@@ -487,8 +487,10 @@ void FP_Growth_Merge(vector<set<int>> transactions, int min_sup, vector<int> alp
 signed main()
 {
     // step 1 - use Curl to read the file eg. curl 'http://www.philippe-fournier-viger.com/spmf/datasets/BMS1_spmf' > abc.txt 
-    ifstream fin("abc.txt", ios::in);
-    string line;
+    string file_path,line;
+	cout << "Input The Path To The File -> ";
+	cin >> file_path;
+	ifstream fin(file_path, ios::in);
     int i = 0;
     vector<set<int>> v;
     int abc = 0;
@@ -509,12 +511,13 @@ signed main()
         }
         v.push_back(t);
     }
-    // cout <<"ENTER SUPPORT COUNT % : "<<endl;
-    // double mins;
-    // cin >>mins;
-    // int minsup = ceil(((mins*abc)/100.0));
-    int minsup = 410;
-    cout <<"Support value is : "<<minsup<<endl;
+    double min_sup,n;
+    cout << "Input The Minimum Support Count (in percentage) -> ";
+    cin >> min_sup;
+    n=(double)v.size();
+    n*=min_sup;
+    n/=100;
+    int minsup=n;
     vector<int> alpha;
     auto start = high_resolution_clock::now();
     FP_Growth(v,minsup,alpha);
